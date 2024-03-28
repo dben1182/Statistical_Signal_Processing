@@ -57,6 +57,7 @@ def ad_hoc_estimator(X):
 
     #creates summing variable to sum along diagonals
     sum = 0.0
+    
 
 
     #iterates through to estimate each sample of theta
