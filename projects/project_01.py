@@ -7,12 +7,17 @@ import scipy as sp
 
 import matplotlib.pyplot as plt
 
+#gets the maximum likelihood estimator
+from estimators import ml_estimator
+#gets the ad hoc estimator
+from estimators import ad_hoc_estimator
+
 #M represents the number of samples in Theta
 M = 50
 #N represents the number of random samples to draw
 #after a little trial and error, I have found that we need on the order of 10,000
 #iterations to make this work.
-N = 20
+N = 50
 
 
 ########################################################################################
@@ -100,11 +105,14 @@ CRB = (1/N)*np.linalg.inv(J)
 #gets the maximum likelihood estimate of R, and subsequently theta
 
 
-#creates the R hat maximum likelihood
-R_hat = np.zeros((M,M))
+#creates the C estimate matrix, which is the covariance of theta error
+C = np.zeros((M,M))
+
+#creates the c estimate matrix for the ad hoc solution
+C_ad_hoc = np.zeros((M,M))
 
 #sets the number of Monte Carlo simulations
-num_monte_carlo_runs = 10000
+num_monte_carlo_runs = 1000
 
 #iterates through and gets the R_hat for the N random vector samples
 for i in range(num_monte_carlo_runs):
@@ -114,20 +122,47 @@ for i in range(num_monte_carlo_runs):
     #prints the size of X
     #print("X: \n", X)
 
-    #gets the outer product of X with itself
-    outer_product = np.outer(X, X)
-    #adds each x to itself with 
-    R_hat = R_hat + outer_product
+    #gets the R_hat, and theta_hat via maximum likelihood estimation
+    #from the X samples of vectors
+    R_hat_i, theta_hat_i = ml_estimator(X)
+
+    #gets the current theta_error, which is theta hat minus theta
+    theta_error_i = theta_hat_i - theta
 
 
-#normalizes R_hat
-R_hat = (1/N)*R_hat
+    #adds another error covariance to C
+    C = C + np.outer(theta_error_i, theta_error_i)
 
-#gets theta hat from R_hat
-theta_hat = R_hat[0,:]
+    #gets the theta hat from the ad hoc solution
+    theta_hat_ad_hoc = ad_hoc_estimator(X)
 
-#gets the error, which is theta hat minus theta
-theta_error = theta_hat - theta
+
+    #gets the theta error_ad_hoc
+    theta_error_ad_hoc = theta_hat_ad_hoc - theta
+
+
+    #adds another error covariance to C_ad_hoc
+    C_ad_hoc = C_ad_hoc + np.outer(theta_error_ad_hoc, theta_error_ad_hoc)
+
+
+    if i == 150:
+        a = 50
+
+        print("Theta: \n", theta)
+        print("Theta error: \n", theta_error_i)
+        print("Theta hat ad hoc: \n", theta_hat_ad_hoc)
+        print("Theta error ad hoc: \n", theta_error_ad_hoc)
+
+
+#then normalizes C by the number of monte carlo runs
+C = (1/num_monte_carlo_runs)*C
+
+#then normalizes the C_ad_hoc by the number of monte carlo runs
+C_ad_hoc = (1/num_monte_carlo_runs)*C_ad_hoc
+print("C ad hoc: \n", C_ad_hoc)
+
+
+
 
 
 #end section 3
@@ -137,18 +172,7 @@ theta_error = theta_hat - theta
 #section 4
 #Section 4 includes the plots to compare the actual sample estimation error variance
 
-#gets the Cramer Rao lower bounds for the error variances by extracting the diagonals
-CRB_vector = np.diag(CRB)
-print("CRB Vector: \n", CRB_vector)
 
-#gets the actual squared error of theta
-MSE = (theta_error)**2
-
-#plots the MSE for the thetas
-plt.figure()
-plt.plot(MSE)
-#also plots the CRB on the same plot
-plt.plot(CRB_vector)
 
 
 ########################################################################################
