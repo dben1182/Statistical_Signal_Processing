@@ -13,11 +13,11 @@ from estimators import ml_estimator
 from estimators import ad_hoc_estimator
 
 #M represents the number of samples in Theta
-M = 50
+M = 6
 #N represents the number of random samples to draw
 #after a little trial and error, I have found that we need on the order of 10,000
 #iterations to make this work.
-N = 50
+N = 10000
 
 
 ########################################################################################
@@ -29,10 +29,11 @@ N = 50
 mu = np.zeros((M))
 
 #gets the initial theta vector
-theta_initial = np.random.uniform(low=0.0, high=100.0, size=M)
+theta_initial = np.random.normal(1.0, 1.0, size=M)
 
 #gets the initial R matrix
 R_initial = sp.linalg.toeplitz(theta_initial)
+print("R initial: \n", R_initial)
 
 #checks the eigenvalues of R_initial, and if it is negative, we add that amount to the main diagonal
 
@@ -46,10 +47,14 @@ R_initial_eigenvalues_minimum = np.min(R_initial_eigenvalues)
 
 #adds the absolute value of that to the real theta plus a buffer of one, with the rest unchanged
 theta = theta_initial
-theta[0] = theta[0] + np.abs(R_initial_eigenvalues_minimum) + 1.0 
+theta[0] = theta[0] + np.abs(R_initial_eigenvalues_minimum) + 3.0
 
 #gets the final R matrix
 R = sp.linalg.toeplitz(theta)
+
+
+values, vectors = np.linalg.eig(R)
+print("Eigenvalues: ", values)
 
 #gets the eigenvalues
 R_eigenvalues, R_eigenvectors = np.linalg.eig(R)
@@ -112,7 +117,9 @@ C = np.zeros((M,M))
 C_ad_hoc = np.zeros((M,M))
 
 #sets the number of Monte Carlo simulations
-num_monte_carlo_runs = 1000
+num_monte_carlo_runs = 100
+
+print("Theta: ", theta)
 
 #iterates through and gets the R_hat for the N random vector samples
 for i in range(num_monte_carlo_runs):
@@ -130,6 +137,9 @@ for i in range(num_monte_carlo_runs):
     theta_error_i = theta_hat_i - theta
 
 
+    #print("Theta_hat: ", theta_hat_i)
+    #print("Theta error hat: ", theta_error_i)
+
     #adds another error covariance to C
     C = C + np.outer(theta_error_i, theta_error_i)
 
@@ -140,18 +150,15 @@ for i in range(num_monte_carlo_runs):
     #gets the theta error_ad_hoc
     theta_error_ad_hoc = theta_hat_ad_hoc - theta
 
+    #print("Teta hat ad hoc: ", theta_hat_ad_hoc)
+    #print("Theta error ad hoc: ", theta_error_ad_hoc)
 
     #adds another error covariance to C_ad_hoc
     C_ad_hoc = C_ad_hoc + np.outer(theta_error_ad_hoc, theta_error_ad_hoc)
 
 
-    if i == 150:
-        a = 50
-
-        print("Theta: \n", theta)
-        print("Theta error: \n", theta_error_i)
-        print("Theta hat ad hoc: \n", theta_hat_ad_hoc)
-        print("Theta error ad hoc: \n", theta_error_ad_hoc)
+print("Theta actual: ", theta)
+print()
 
 
 #then normalizes C by the number of monte carlo runs
@@ -160,6 +167,12 @@ C = (1/num_monte_carlo_runs)*C
 #then normalizes the C_ad_hoc by the number of monte carlo runs
 C_ad_hoc = (1/num_monte_carlo_runs)*C_ad_hoc
 print("C ad hoc: \n", C_ad_hoc)
+
+
+C_ad_hoc_diag = np.diag(C_ad_hoc)
+print("C ad hoc diag: \n", C_ad_hoc_diag)
+
+print("CRB lower bound: ", CRB)
 
 
 
