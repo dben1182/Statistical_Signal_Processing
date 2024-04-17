@@ -12,8 +12,12 @@ from estimators import ml_estimator
 #gets the ad hoc estimator
 from estimators import ad_hoc_estimator
 
+#import pylatex
+from IPython.display import display, Math, Latex
+#imports the pylatex libraries to do printing 
+
 #M represents the number of samples in Theta
-M = 6
+M = 20
 #N represents the number of random samples to draw
 #after a little trial and error, I have found that we need on the order of 10,000
 #iterations to make this work.
@@ -33,7 +37,7 @@ theta_initial = np.random.normal(1.0, 1.0, size=M)
 
 #gets the initial R matrix
 R_initial = sp.linalg.toeplitz(theta_initial)
-print("R initial: \n", R_initial)
+#print("R initial: \n", R_initial)
 
 #checks the eigenvalues of R_initial, and if it is negative, we add that amount to the main diagonal
 
@@ -166,29 +170,29 @@ C = (1/num_monte_carlo_runs)*C
 
 #then normalizes the C_ad_hoc by the number of monte carlo runs
 C_ad_hoc = (1/num_monte_carlo_runs)*C_ad_hoc
-print("C ad hoc: \n", C_ad_hoc)
+#print("C ad hoc: \n", C_ad_hoc)
 
 
 C_ad_hoc_diag = np.diag(C_ad_hoc)
 print("C ad hoc diag: \n", C_ad_hoc_diag)
 
+#print("CRB lower bound: ", CRB)
+#gets the CRB diagonal entries
 CRB_diag = np.diag(CRB)
-print("CRB lower bound: ", CRB_diag)
 
-
+#creates the linspace
+theta_number = np.linspace(1, M, M)
+#plots out the various plots comparing the CRB with the actual variance
+plt.figure()
+plt.title("CRB vs C sample estimation analysis")
+plt.plot(theta_number, C_ad_hoc_diag)
+plt.plot(theta_number, CRB_diag)
+plt.legend(["Sample", "CRB"])
 
 
 
 #end section 3
 ########################################################################################
 
-########################################################################################
-#section 4
-#Section 4 includes the plots to compare the actual sample estimation error variance
-
-
-
-
-########################################################################################
 
 # %%
