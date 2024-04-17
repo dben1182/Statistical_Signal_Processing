@@ -172,7 +172,8 @@ print("C ad hoc: \n", C_ad_hoc)
 C_ad_hoc_diag = np.diag(C_ad_hoc)
 print("C ad hoc diag: \n", C_ad_hoc_diag)
 
-print("CRB lower bound: ", CRB)
+CRB_diag = np.diag(CRB)
+print("CRB lower bound: ", CRB_diag)
 
 
 
